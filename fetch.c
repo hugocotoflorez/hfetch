@@ -6,10 +6,11 @@
 #include <unistd.h>
 #include <wchar.h>
 
-SystemInfo get_system_info(enum ToFetch to_fetch)
+SystemInfo
+get_system_info(enum ToFetch to_fetch)
 {
-    FILE* pipe;
-    char buffer[STR_LEN];
+    FILE      *pipe;
+    char       buffer[STR_LEN];
     SystemInfo sysinfo = { 0 };
 
     if (HOST & to_fetch)
@@ -94,18 +95,59 @@ SystemInfo get_system_info(enum ToFetch to_fetch)
         strcpy(sysinfo.uptime_name, "uptime");
     }
 
+    if (CPU & to_fetch)
+    {
+        pipe = popen(CPU_S, "r");
+        fgets(buffer, STR_LEN, pipe);
+        clear_buffer;
+        buffer[strlen(buffer) - 1] = 0;
+        strcpy(sysinfo.cpu, buffer);
+        strcpy(sysinfo.cpu_name, "cpu");
+    }
+
+    if (GPU & to_fetch)
+    {
+        pipe = popen(GPU_S, "r");
+        fgets(buffer, STR_LEN, pipe);
+        clear_buffer;
+        buffer[strlen(buffer) - 1] = 0;
+        strcpy(sysinfo.gpu, buffer);
+        strcpy(sysinfo.gpu_name, "gpu");
+    }
+
+    if (MODEL & to_fetch)
+    {
+        pipe = popen("cat /sys/class/dmi/id/product_name", "r");
+        fgets(buffer, STR_LEN, pipe);
+        clear_buffer;
+        buffer[strlen(buffer) - 1] = 0;
+        strcpy(sysinfo.model, buffer);
+        strcpy(sysinfo.model_name, "model");
+    }
+
+    if (VENDOR & to_fetch)
+    {
+        pipe = popen("cat /sys/class/dmi/id/sys_vendor", "r");
+        fgets(buffer, STR_LEN, pipe);
+        clear_buffer;
+        buffer[strlen(buffer) - 1] = 0;
+        strcpy(sysinfo.vendor, buffer);
+        strcpy(sysinfo.vendor_name, "vendor");
+    }
+
     pclose(pipe);
 
     return sysinfo;
     buffer[strlen(buffer)] = 0;
 }
 
-void print_info(SystemInfo sysinfo, int len)
+void
+print_info(SystemInfo sysinfo, int len)
 {
     for (int i = 0; i < sizeof(SystemInfo); i += STR_LEN * 2)
     {
         // real info
-        if (strlen((char*)&sysinfo + i) > 0)
+        if (strlen((char *) &sysinfo + i) > 0)
         {
             wprintf(L"%-*s", L_MARGIN, "");    // left margin
             putwchar(V_CHAR);                  // border
@@ -114,7 +156,7 @@ void print_info(SystemInfo sysinfo, int len)
             reset_color();
             set_bold();
             set_color(WHITE);
-            wprintf(L"%-*s", SEP_ALIGN, (char*)&sysinfo + i); // field name
+            wprintf(L"%-*s", SEP_ALIGN, (char *) &sysinfo + i); // field name
 
             reset_color();
             set_bold();
@@ -124,7 +166,7 @@ void print_info(SystemInfo sysinfo, int len)
             reset_color();
             set_color(WHITE);
             wprintf(L"%-*s", len - SEP_ALIGN - AFTER_SEP_MARGIN - 3,
-            (char*)&sysinfo + i + STR_LEN); // field info
+                    (char *) &sysinfo + i + STR_LEN); // field info
 
             wprintf(L"%-*s", R_MARGIN_IN, ""); // right margin (in)
             putwchar(V_CHAR);                  // border
@@ -134,18 +176,20 @@ void print_info(SystemInfo sysinfo, int len)
     }
 }
 
-int get_len(SystemInfo sysinfo)
+int
+get_len(SystemInfo sysinfo)
 {
-    int len  = 0, l;
+    int len = 0, l;
     int PADD = R_MARGIN_IN + SEP_ALIGN + AFTER_SEP_MARGIN + L_MARGIN_IN + 1;
     for (int i = 0; i < sizeof(SystemInfo); i += STR_LEN * 2)
-        if (strlen((char*)&sysinfo + i) > 0)
-            if ((l = strlen((char*)&sysinfo + i + STR_LEN)) + PADD > len)
+        if (strlen((char *) &sysinfo + i) > 0)
+            if ((l = strlen((char *) &sysinfo + i + STR_LEN)) + PADD > len)
                 len = l + PADD;
     return len;
 }
 
-void render_info(SystemInfo sysinfo)
+void
+render_info(SystemInfo sysinfo)
 {
     int len = get_len(sysinfo);
     setlocale(LC_ALL, "");
@@ -173,10 +217,13 @@ void render_info(SystemInfo sysinfo)
         putwchar('\n');
 }
 
-int main()
+int
+main()
 {
     int OPT = ALL;
     EXCLUDE(OPT, DE);
+    EXCLUDE(OPT, CPU);
+    EXCLUDE(OPT, GPU);
 
     SystemInfo sysinfo = get_system_info(OPT);
     render_info(sysinfo);

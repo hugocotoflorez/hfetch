@@ -3,15 +3,11 @@
 Another neofetch alternative
 
 > [!WARNING]
-> Dont use it! It probably only work on my computer
+> Dont use it! It probably only work on my machine
 
 ## Settings
 
 You can change some settings in header file and exclude fields in main()
-
-## Expand
-
-Its easy to expand it
 
 ## Issues
 
