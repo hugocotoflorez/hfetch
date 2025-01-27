@@ -135,6 +135,23 @@ get_system_info(enum ToFetch to_fetch)
         strcpy(sysinfo.vendor_name, "vendor");
     }
 
+    if (COLORS & to_fetch)
+    {
+        strncpy(sysinfo.colors,
+                "\e[40m  "
+                "\e[41m  "
+                "\e[42m  "
+                "\e[43m  "
+                "\e[44m  "
+                "\e[45m  "
+                "\e[46m  "
+                "\e[47m  "
+                "\e[0m\0",
+                STR_LEN);
+        strcpy(sysinfo.colors_name, "colors");
+    }
+
+
     pclose(pipe);
 
     return sysinfo;
@@ -165,8 +182,12 @@ print_info(SystemInfo sysinfo, int len)
 
             reset_color();
             set_color(WHITE);
-            wprintf(L"%-*s", len - SEP_ALIGN - AFTER_SEP_MARGIN - 3,
-                    (char *) &sysinfo + i + STR_LEN); // field info
+            if (!strcmp((char *) &sysinfo + i, "colors"))
+                wprintf(L"%-*s", len + 44 - SEP_ALIGN - AFTER_SEP_MARGIN - 3,
+                        (char *) &sysinfo + i + STR_LEN); // field info
+            else
+                wprintf(L"%-*s", len - SEP_ALIGN - AFTER_SEP_MARGIN - 3,
+                        (char *) &sysinfo + i + STR_LEN); // field info
 
             wprintf(L"%-*s", R_MARGIN_IN, ""); // right margin (in)
             putwchar(V_CHAR);                  // border
