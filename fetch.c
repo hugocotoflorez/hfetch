@@ -78,7 +78,7 @@ get_system_info(enum ToFetch to_fetch)
     }
     if (SHELL & to_fetch)
     {
-        pipe = popen("echo $SHELL | cut -d '/' -f3", "r");
+        pipe = popen("basename $SHELL", "r");
         fgets(buffer, STR_LEN, pipe);
         clear_buffer;
         buffer[strlen(buffer) - 1] = 0;
